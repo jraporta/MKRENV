@@ -5,9 +5,9 @@
 
 File myFile;
 char fileName[20] = "reg24h.txt";
-const int trigger = 20;
-const int logsToRemove = 10;
-unsigned long Time = 4000;
+const int trigger = 12*25;
+const int logsToRemove = 12;
+unsigned long Time = 5*60*1000;
 unsigned long prevTime = 0;
 
 void setup() {
