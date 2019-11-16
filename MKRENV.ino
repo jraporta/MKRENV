@@ -1,67 +1,94 @@
-/*
-  MKR ENV Shield - Read Sensors
-
-  This example reads the sensors on-board the MKR ENV shield
-  and prints them to the Serial Monitor once a second.
-
-  The circuit:
-  - Arduino MKR board
-  - Arduino MKR ENV Shield attached
-
-  This example code is in the public domain.
-*/
-
 #include <Arduino_MKRENV.h>
+#include <SPI.h>
+#include <SD.h>
+#include "RoundRobinbyJR.h"
+
+File myFile;
+char fileName[20] = "reg24h.txt";
+const int trigger = 20;
+const int logsToRemove = 10;
+unsigned long Time = 4000;
+unsigned long prevTime = 0;
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
 
   if (!ENV.begin()) {
     Serial.println("Failed to initialize MKR ENV shield!");
     while (1);
   }
+
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(4)) {
+    Serial.println("initialization failed!");
+    while (1);
+  }
+  Serial.println("initialization done.");
 }
 
 void loop() {
+  String serialInput = "";
+  if ((prevTime + Time) < millis()) {
+    getENVValues();
+    prevTime = millis();
+    if (NumberOfLogs(fileName) >= trigger) {
+      Serial.print("Deleting oldest logs.....");
+      RemoveOldLogs(fileName, trigger, logsToRemove);
+      Serial.println("done.");
+    }
+  }
+  while (Serial.available()) {
+    serialInput += char(Serial.read());
+  }
+  if (serialInput == "check") {
+    fileInfo();
+  }
+}
+
+void getENVValues() {
   // read all the sensor values
   float temperature = ENV.readTemperature();
   float humidity    = ENV.readHumidity();
   float pressure    = ENV.readPressure();
-//  float illuminance = ENV.readIlluminance();
+  //  float illuminance = ENV.readIlluminance();
   float uva         = ENV.readUVA();
   float uvb         = ENV.readUVB();
   float uvIndex     = ENV.readUVIndex();
 
-  // print each of the sensor values
-  Serial.print("Temperature = ");
-  Serial.print(temperature);
-  Serial.println(" °C");
+  myFile = SD.open(fileName, FILE_WRITE);
 
-  Serial.print("Humidity    = ");
-  Serial.print(humidity);
-  Serial.println(" %");
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Writing to ");
+    Serial.print(fileName);
+    Serial.print(" .....");
+    unsigned int prueba = millis();
+    myFile.print(int(millis() / 1000.0));
+    myFile.print(" s ");
+    myFile.print(temperature);
+    myFile.print(" °C ");
+    myFile.print(humidity);
+    myFile.print(" % ");
+    myFile.print(pressure);
+    myFile.print(" kPa ");
+    myFile.print(uva);
+    myFile.print(" UVA ");
+    myFile.print(uvb);
+    myFile.print(" UVB ");
+    myFile.print(uvIndex);
+    myFile.println(" UVIndex");
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    Serial.println("error opening test.txt");
+  }
+}
 
-  Serial.print("Pressure    = ");
-  Serial.print(pressure);
-  Serial.println(" kPa");
-
-//  Serial.print("Illuminance = ");
-//  Serial.print(illuminance);
-//  Serial.println(" lx");
-
-  Serial.print("UVA         = ");
-  Serial.println(uva);
-
-  Serial.print("UVB         = ");
-  Serial.println(uvb);
-
-  Serial.print("UV Index    = ");
-  Serial.println(uvIndex);
-
-  // print an empty line
-  Serial.println();
-
-  // wait 1 second to print again
-  delay(5000);
+void fileInfo() {
+  Serial.print(fileName);
+  Serial.print(" contains ");
+  int num = NumberOfLogs(fileName);
+  Serial.print(num);
+  Serial.println(" logs.\nShowing contents...");
+  PrintFile(fileName);
 }
