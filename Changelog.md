@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://
 - RTC support
 - WiFi connectivity
 
+## [0.0.4] - 16/11/2019
+### Changed
+- CleanOldLogs Function. It was adding some invisible end of line character that on some text edditors gave problems.
+- Aesthetic minor changes.
+
 ## [0.0.3] - 16/11/2019
 ### Added
 - SD card keeping a 24h data register.

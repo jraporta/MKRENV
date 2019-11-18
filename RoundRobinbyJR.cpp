@@ -4,7 +4,7 @@
 void WriteLine(char* filename, String line) {
   File myxFile;
   myxFile = SD.open(filename, FILE_WRITE);
-  myxFile.println(line);
+  myxFile.print(line);
   myxFile.close();
 }
 
@@ -21,10 +21,10 @@ String ReadLine(char* filename, int x = 1) {
   }
   while (myxFile.available()) {
     char c = myxFile.read();
+    line += c;
     if (c == '\n' ) {
       break;
     }
-    line += c; 
   }
   myxFile.close();
   return line;

@@ -1,3 +1,5 @@
+//MKRENV v0.04
+
 #include <Arduino_MKRENV.h>
 #include <SPI.h>
 #include <SD.h>
@@ -5,20 +7,22 @@
 
 File myFile;
 char fileName[20] = "reg24h.txt";
-const int trigger = 12*25;
-const int logsToRemove = 12;
-unsigned long Time = 5*60*1000;
+const int trigger = 12 * 25; //25 hours
+const int logsToRemove = 12; //1 hour
+unsigned long Time = 5 * 60 * 1000; //every 5 minutes
 unsigned long prevTime = 0;
 
 void setup() {
+  delay(5000);
   Serial.begin(9600);
 
+  Serial.println("Initializing MKR ENV shield...");
   if (!ENV.begin()) {
     Serial.println("Failed to initialize MKR ENV shield!");
     while (1);
   }
 
-  Serial.print("Initializing SD card...");
+  Serial.println("Initializing SD card...");
   if (!SD.begin(4)) {
     Serial.println("initialization failed!");
     while (1);
@@ -55,10 +59,7 @@ void getENVValues() {
   float uvb         = ENV.readUVB();
   float uvIndex     = ENV.readUVIndex();
 
-  myFile = SD.open(fileName, FILE_WRITE);
-
-  // if the file opened okay, write to it:
-  if (myFile) {
+  if (myFile = SD.open(fileName, FILE_WRITE)) {
     Serial.print("Writing to ");
     Serial.print(fileName);
     Serial.print(" .....");
